@@ -50,8 +50,8 @@ Oracle DB     OpenWeather API
 
 ## Tópicos MQTT
 
-- maquina1/temperatura  
-- maquina1/luminosidade  
+- casa/temperatura  
+- casa/luminosidade  
 
 Broker: broker.hivemq.com  
 Porta: 1883
