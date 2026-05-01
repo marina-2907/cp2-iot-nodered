@@ -1,0 +1,609 @@
+[
+    {
+        "id": "tab-1",
+        "type": "tab",
+        "label": "Monitoramento IoT",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "mqtt-temp",
+        "type": "mqtt in",
+        "z": "tab-1",
+        "name": "Recebe Temperatura",
+        "topic": "casa/temperatura",
+        "qos": "0",
+        "datatype": "json",
+        "broker": "58b38a9ff0e0ce90",
+        "nl": false,
+        "rap": false,
+        "inputs": 0,
+        "x": 120,
+        "y": 80,
+        "wires": [
+            [
+                "parse-temp"
+            ]
+        ]
+    },
+    {
+        "id": "parse-temp",
+        "type": "function",
+        "z": "tab-1",
+        "name": "Parsear Temperatura",
+        "func": "var valor = parseFloat(msg.payload);\nmsg.payload = valor;\nmsg.topic = \"temperatura\";\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 340,
+        "y": 80,
+        "wires": [
+            [
+                "gauge-temp",
+                "chart-temp",
+                "check-alerta-temp",
+                "mysql-insert"
+            ]
+        ]
+    },
+    {
+        "id": "check-alerta-temp",
+        "type": "function",
+        "z": "tab-1",
+        "name": "Verificar Alerta Temp",
+        "func": "var temp = parseFloat(msg.payload);\nif (temp > 35) {\n    msg.payload = 'ALERTA: Temperatura alta! ' + temp + '°C';\n    msg.color = 'red';\n} else {\n    msg.payload = 'Temperatura normal: ' + temp + '°C';\n    msg.color = 'green';\n}\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 580,
+        "y": 140,
+        "wires": [
+            [
+                "ui-text-alerta-temp"
+            ]
+        ]
+    },
+    {
+        "id": "mqtt-lum",
+        "type": "mqtt in",
+        "z": "tab-1",
+        "name": "Recebe Luminosidade",
+        "topic": "casa/luminosidade",
+        "qos": "0",
+        "datatype": "json",
+        "broker": "58b38a9ff0e0ce90",
+        "nl": false,
+        "rap": false,
+        "inputs": 0,
+        "x": 120,
+        "y": 220,
+        "wires": [
+            [
+                "parse-lum"
+            ]
+        ]
+    },
+    {
+        "id": "parse-lum",
+        "type": "function",
+        "z": "tab-1",
+        "name": "Parsear Luminosidade",
+        "func": "var valor = parseFloat(msg.payload);\nmsg.payload = valor;\nmsg.topic = \"luminosidade\";\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 340,
+        "y": 220,
+        "wires": [
+            [
+                "gauge-lum",
+                "chart-lum",
+                "check-alerta-lum",
+                "mysql-insert"
+            ]
+        ]
+    },
+    {
+        "id": "check-alerta-lum",
+        "type": "function",
+        "z": "tab-1",
+        "name": "Verificar Alerta Lum",
+        "func": "var lum = parseFloat(msg.payload);\nif (lum < 200) {\n    msg.payload = 'Ambiente muito escuro: ' + lum;\n} else if (lum > 3000) {\n    msg.payload = 'Luminosidade muito alta: ' + lum;\n} else {\n    msg.payload = 'Luminosidade normal: ' + lum;\n}\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 580,
+        "y": 280,
+        "wires": [
+            [
+                "ui-text-alerta-lum"
+            ]
+        ]
+    },
+    {
+        "id": "mysql-insert",
+        "type": "function",
+        "z": "tab-1",
+        "name": "Preparar SQL",
+        "func": "var sensor = msg.topic;\nvar valor = Number(msg.payload);\n\nmsg.query = \"INSERT INTO LEITURAS (SENSOR, VALOR, MOMENTO) VALUES (:SENSOR, :VALOR, SYSDATE)\";\n\nmsg.payload = {\n    SENSOR: sensor,\n    VALOR: valor\n};\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 580,
+        "y": 380,
+        "wires": [
+            [
+                "99b7066a7eb47e45"
+            ]
+        ]
+    },
+    {
+        "id": "debug-mysql",
+        "type": "debug",
+        "z": "tab-1",
+        "name": "Debug MySQL",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1060,
+        "y": 380,
+        "wires": []
+    },
+    {
+        "id": "inject-clima",
+        "type": "inject",
+        "z": "tab-1",
+        "name": "Buscar Clima a cada 10min",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "600",
+        "crontab": "",
+        "once": true,
+        "onceDelay": "1",
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 150,
+        "y": 500,
+        "wires": [
+            [
+                "http-clima"
+            ]
+        ]
+    },
+    {
+        "id": "http-clima",
+        "type": "http request",
+        "z": "tab-1",
+        "name": "API OpenWeather",
+        "method": "GET",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "https://api.openweathermap.org/data/2.5/weather?q=Sao+Paulo,BR&appid=35c299e032a62c4494f13c078a2169ea&units=metric&lang=pt_br",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 380,
+        "y": 500,
+        "wires": [
+            [
+                "parse-clima"
+            ]
+        ]
+    },
+    {
+        "id": "parse-clima",
+        "type": "function",
+        "z": "tab-1",
+        "name": "Parsear Clima",
+        "func": "var data = msg.payload;\nvar temp = data.main.temp;\nvar umidade = data.main.humidity;\nvar descricao = data.weather[0].description;\nvar cidade = data.name;\n\nmsg.payload = {\n    temperatura_ext: temp,\n    umidade_ext: umidade,\n    descricao: descricao,\n    cidade: cidade\n};\n\nmsg.clima_texto = ' ' + cidade + ': ' + temp + '°C, ' + umidade + '% umidade - ' + descricao;\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 580,
+        "y": 500,
+        "wires": [
+            [
+                "ui-text-clima",
+                "gauge-temp-ext",
+                "gauge-umid-ext"
+            ]
+        ]
+    },
+    {
+        "id": "ui-text-alerta-temp",
+        "type": "ui_text",
+        "z": "tab-1",
+        "group": "ui-group-alertas",
+        "order": 1,
+        "width": 6,
+        "height": 1,
+        "name": "Alerta Temperatura",
+        "label": "Status Temperatura",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "x": 850,
+        "y": 140,
+        "wires": []
+    },
+    {
+        "id": "ui-text-alerta-lum",
+        "type": "ui_text",
+        "z": "tab-1",
+        "group": "ui-group-alertas",
+        "order": 2,
+        "width": 6,
+        "height": 1,
+        "name": "Alerta Luminosidade",
+        "label": "Status Luminosidade",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "x": 820,
+        "y": 280,
+        "wires": []
+    },
+    {
+        "id": "ui-text-clima",
+        "type": "ui_text",
+        "z": "tab-1",
+        "group": "ui-group-clima",
+        "order": 1,
+        "width": 6,
+        "height": 1,
+        "name": "Clima Externo",
+        "label": "Clima em São Paulo",
+        "format": "{{msg.clima_texto}}",
+        "layout": "row-spread",
+        "className": "",
+        "style": false,
+        "font": "",
+        "fontSize": "",
+        "color": "#000000",
+        "x": 800,
+        "y": 480,
+        "wires": []
+    },
+    {
+        "id": "gauge-temp",
+        "type": "ui_gauge",
+        "z": "tab-1",
+        "name": "Gauge Temperatura",
+        "group": "ui-group-sensores",
+        "order": 1,
+        "width": 3,
+        "height": 3,
+        "gtype": "gage",
+        "title": "Temperatura (°C)",
+        "label": "°C",
+        "format": "{{value}}",
+        "min": 0,
+        "max": 50,
+        "colors": [
+            "#00b500",
+            "#e6e600",
+            "#ca3838"
+        ],
+        "seg1": 30,
+        "seg2": 40,
+        "diff": false,
+        "className": "",
+        "x": 580,
+        "y": 60,
+        "wires": []
+    },
+    {
+        "id": "gauge-lum",
+        "type": "ui_gauge",
+        "z": "tab-1",
+        "name": "Gauge Luminosidade",
+        "group": "ui-group-sensores",
+        "order": 3,
+        "width": 3,
+        "height": 3,
+        "gtype": "gage",
+        "title": "Luminosidade",
+        "label": "lux",
+        "format": "{{value}}",
+        "min": 0,
+        "max": 4095,
+        "colors": [
+            "#ca3838",
+            "#e6e600",
+            "#00b500"
+        ],
+        "seg1": 500,
+        "seg2": 2000,
+        "diff": false,
+        "className": "",
+        "x": 580,
+        "y": 200,
+        "wires": []
+    },
+    {
+        "id": "gauge-temp-ext",
+        "type": "ui_gauge",
+        "z": "tab-1",
+        "name": "Temp Externa",
+        "group": "ui-group-clima",
+        "order": 2,
+        "width": 3,
+        "height": 3,
+        "gtype": "gage",
+        "title": "Temp. Externa (°C)",
+        "label": "°C",
+        "format": "{{msg.payload.temperatura_ext}}",
+        "min": 0,
+        "max": 45,
+        "colors": [
+            "#00b500",
+            "#e6e600",
+            "#ca3838"
+        ],
+        "seg1": 25,
+        "seg2": 35,
+        "diff": false,
+        "className": "",
+        "x": 800,
+        "y": 520,
+        "wires": []
+    },
+    {
+        "id": "gauge-umid-ext",
+        "type": "ui_gauge",
+        "z": "tab-1",
+        "name": "Umidade Externa",
+        "group": "ui-group-clima",
+        "order": 3,
+        "width": 3,
+        "height": 3,
+        "gtype": "gage",
+        "title": "Umidade Externa (%)",
+        "label": "%",
+        "format": "{{msg.payload.umidade_ext}}",
+        "min": 0,
+        "max": 100,
+        "colors": [
+            "#ca3838",
+            "#e6e600",
+            "#00b500"
+        ],
+        "seg1": 30,
+        "seg2": 60,
+        "diff": false,
+        "className": "",
+        "x": 800,
+        "y": 560,
+        "wires": []
+    },
+    {
+        "id": "chart-temp",
+        "type": "ui_chart",
+        "z": "tab-1",
+        "name": "Gráfico Temperatura",
+        "group": "ui-group-sensores",
+        "order": 2,
+        "width": 6,
+        "height": 4,
+        "label": "Temperatura ao longo do tempo",
+        "chartType": "line",
+        "legend": "false",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "Aguardando dados...",
+        "dot": false,
+        "ymin": "",
+        "ymax": "",
+        "removeOlder": 1,
+        "removeOlderPoints": "100",
+        "removeOlderUnit": "3600",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#1f77b4",
+            "#000000",
+            "#000000",
+            "#000000",
+            "#000000",
+            "#000000",
+            "#000000",
+            "#000000",
+            "#000000"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "className": "",
+        "x": 580,
+        "y": 100,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "chart-lum",
+        "type": "ui_chart",
+        "z": "tab-1",
+        "name": "Gráfico Luminosidade",
+        "group": "ui-group-sensores",
+        "order": 4,
+        "width": 6,
+        "height": 4,
+        "label": "Luminosidade ao longo do tempo",
+        "chartType": "line",
+        "legend": "false",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "Aguardando dados...",
+        "dot": false,
+        "ymin": "",
+        "ymax": "",
+        "removeOlder": 1,
+        "removeOlderPoints": "100",
+        "removeOlderUnit": "3600",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#ff7f0e",
+            "#000000",
+            "#000000",
+            "#000000",
+            "#000000",
+            "#000000",
+            "#000000",
+            "#000000",
+            "#000000"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "className": "",
+        "x": 580,
+        "y": 240,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "99b7066a7eb47e45",
+        "type": "oracledb",
+        "z": "tab-1",
+        "name": "CP2 - MQTT ESP32",
+        "usequery": false,
+        "query": "INSERT INTO LEITURAS (SENSOR, VALOR, MOMENTO)\nVALUES (:SENSOR, :VALOR, SYSDATE)",
+        "usemappings": false,
+        "mappings": "[\n\t\"location.of.first.array.index.field.in.msg.payload\",\n\t\"location.of.second.array.index.field\",\n\t\"last_array_indexfield.in[3]\"\n]",
+        "server": "4723674277d58296",
+        "resultaction": "multi",
+        "resultlimit": 100,
+        "x": 820,
+        "y": 380,
+        "wires": [
+            [
+                "debug-mysql"
+            ]
+        ]
+    },
+    {
+        "id": "58b38a9ff0e0ce90",
+        "type": "mqtt-broker",
+        "name": "",
+        "broker": "f95f77855cb6413cba27d33be6a30e44.s1.eu.hivemq.cloud",
+        "port": "8883",
+        "tls": "",
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": true,
+        "protocolVersion": 4,
+        "keepalive": 60,
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthRetain": "false",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closeRetain": "false",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willRetain": "false",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    },
+    {
+        "id": "ui-group-alertas",
+        "type": "ui_group",
+        "name": "Alertas",
+        "tab": "ui-tab-1",
+        "order": 2,
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "ui-group-clima",
+        "type": "ui_group",
+        "name": "Clima Externo (API)",
+        "tab": "ui-tab-1",
+        "order": 3,
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "ui-group-sensores",
+        "type": "ui_group",
+        "name": "Sensores ESP32",
+        "tab": "ui-tab-1",
+        "order": 1,
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "4723674277d58296",
+        "type": "oracle-server",
+        "connectionname": "CP2 - MQTT e ESP32",
+        "tnsname": "",
+        "connectiontype": "Classic",
+        "instantclientpath": "",
+        "host": "oracle.fiap.com.br",
+        "port": 1521,
+        "db": "ORCL",
+        "poolmin": "",
+        "poolmax": 4,
+        "pooltimeout": 60
+    },
+    {
+        "id": "ui-tab-1",
+        "type": "ui_tab",
+        "name": "Dashboard IoT",
+        "icon": "dashboard",
+        "disabled": false,
+        "hidden": false
+    },
+    {
+        "id": "f913590d227ba4d3",
+        "type": "global-config",
+        "env": [],
+        "modules": {
+            "node-red-dashboard": "3.6.6",
+            "node-red-contrib-oracledb-mod": "0.7.6"
+        }
+    }
+]
