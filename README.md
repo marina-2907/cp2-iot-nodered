@@ -53,8 +53,8 @@ Oracle DB     OpenWeather API
 - casa/temperatura  
 - casa/luminosidade  
 
-Broker: broker.hivemq.com  
-Porta: 1883
+Broker: f95f77855cb6413cba27d33be6a30e44.s1.eu.hivemq.cloud
+Porta: 8883
 
 ---
 
@@ -88,11 +88,11 @@ CREATE TABLE leituras (
 
 ## Links do Projeto
 
-Simulação ESP32 (Wokwi):  
+[Simulação ESP32 (Wokwi):  ](https://wokwi.com/projects/462828352389544961)
 
 
 Vídeo de demonstração:  
-(COLE AQUI O LINK DO VÍDEO)
+https://youtu.be/mW8naFiLdfw
 
 ---
 
