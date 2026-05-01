@@ -89,7 +89,7 @@ CREATE TABLE leituras (
 ## Links do Projeto
 
 Simulação ESP32 (Wokwi):  
-[https://wokwi.com/projects/462742521440778241  ](https://wokwi.com/projects/462751136775382017)
+
 
 Vídeo de demonstração:  
 (COLE AQUI O LINK DO VÍDEO)
@@ -109,14 +109,14 @@ npm install node-red-dashboard
 npm install node-red-node-mysql  
 node-red  
 
-Acesse: http://localhost:1880  
+Acesse: [http://localhost:1880 ](http://127.0.0.1:1880/#) 
 Importe fluxo_nodered.json  
 Configure o banco de dados  
 Insira sua API Key  
 Clique em Deploy  
 
 3. Dashboard
-Acesse: http://localhost:1880/ui  
+Acesse: [http://localhost:1880/ui  ](http://127.0.0.1:1880/ui)
 
 4. Banco de Dados
 Execute o script script_oracle.sql  
