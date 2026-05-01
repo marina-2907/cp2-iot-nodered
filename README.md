@@ -81,7 +81,8 @@ CREATE TABLE leituras (
 
 ## Integração com API
 
-https://api.openweathermap.org/data/2.5/weather?q=Sao+Paulo,BR&units=metric&lang=pt_br&appid={API_KEY}
+[https://api.openweathermap.org/data/2.5/weather?q=Sao+Paulo,BR&units=metric&lang=pt_br&appid={API_KEY}](https://api.openweathermap.org/data/2.5/weather?q=Sao+Paulo,BR&appid=35c299e032a62c4494f13c078a2169ea&units=metric&lang=pt_br)
+
 
 ---
 
